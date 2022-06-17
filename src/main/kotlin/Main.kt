@@ -1,7 +1,5 @@
+import kotlinx.html.*
 import kotlinx.html.stream.createHTML
-import kotlinx.html.table
-import kotlinx.html.td
-import kotlinx.html.tr
 import java.io.BufferedReader
 import java.io.StringReader
 import java.util.*
@@ -28,16 +26,71 @@ fun main(args: Array<String>) {
     val people = listOf(Person("Alice", 29), Person("Bob", 31))
     lookForAlice(people)
     println(createSimpleTable())
-    val s = buildString { it.append("Hello, ")
-    it.append("World!")}
+    val ss = buildString {
+        it.append("Hello, ")
+            .append("World!")
+    }
+    val s = buildString1 {
+        this.append("Hello, ")
+        append("World!")
+    }
 
     println(s)
+
+    val myList = buildList {
+        add("Apple")
+        addAll(listOf(1,2,3,4))
+        setOf(1, "Ahmed", 4.2)
+
+    }
+
+    println(myList)
 }
 
-fun buildString(buildAction: (StringBuilder) -> StringBuilder) : String {
+inline fun buildString1( buildAction: StringBuilder.() -> Unit) : String =
+    StringBuilder().apply(buildAction).toString()
+
+fun buildString(buildAction: (who: StringBuilder) -> StringBuilder) : String {
     return buildAction(StringBuilder()).toString()
 
 }
+
+
+open class Tag(val name: String) {
+    private val children = mutableListOf<Tag>()
+
+    protected fun <T : Tag> doInit(child: T, init: T.() -> Unit) {
+        child.init()
+        children.add(child)
+    }
+
+    override fun toString(): String =
+        "<$name>${children.joinToString("")}</$name>}"
+
+}
+
+
+fun table(init: TABLE.() -> Unit) = TABLE().apply(init)
+
+class TABLE: Tag("table") {
+    fun tr(init: TR.() -> Unit ) = doInit(TR(), init)
+}
+
+class TR : Tag("tr") {
+    fun td(init: TD.() -> Unit) = doInit(TD(), init)
+}
+
+class TD : Tag("td")
+
+fun createTable() = table {
+    tr {
+        td {  }
+    }
+}
+
+
+
+
 
 fun createSimpleTable() = createHTML().table {
     tr {
